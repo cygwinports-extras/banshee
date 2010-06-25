@@ -1,0 +1,140 @@
+--- origsrc/banshee-1-1.6.1/build/pkg-config/Makefile.am	2009-04-23 23:27:25.000000000 -0500
++++ src/banshee-1-1.6.1/build/pkg-config/Makefile.am	2010-06-25 04:59:07.379856500 -0500
+@@ -1,5 +1,5 @@
+ pkgconfigdir = $(libdir)/pkgconfig
+-pkgconfig_in_files = $(wildcard banshee-1-*.pc.in)
++pkgconfig_in_files = $(wildcard $(srcdir)/banshee-1-*.pc.in)
+ pkgconfig_DATA = $(pkgconfig_in_files:.pc.in=.pc)
+ 
+ %.pc: %.pc.in
+--- origsrc/banshee-1-1.6.1/data/Makefile.am	2010-02-05 23:34:32.000000000 -0600
++++ src/banshee-1-1.6.1/data/Makefile.am	2010-06-25 04:32:41.725162200 -0500
+@@ -12,9 +12,9 @@ dbusservice_DATA = $(dbusservice_in_file
+ # Generate a fake source file containing strings for
+ # translation that are found in our .addin.xml files
+ ADDIN_XML_FILES = $(shell find $(top_srcdir)/src -name \*.addin.xml)
+-addin-xml-strings.cs: $(ADDIN_XML_FILES) $(top_srcdir)/build/addin-xml-string-extractor.exe
++addin-xml-strings.cs: $(ADDIN_XML_FILES) $(top_builddir)/build/addin-xml-string-extractor.exe
+ 	@echo "  GEN   $@"
+-	$(MONO) $(top_srcdir)/build/addin-xml-string-extractor.exe $(ADDIN_XML_FILES) > $@
++	$(MONO) $(top_builddir)/build/addin-xml-string-extractor.exe $(ADDIN_XML_FILES) > $@
+ 
+ all: addin-xml-strings.cs
+ 
+--- origsrc/banshee-1-1.6.1/data/desktop-files/Makefile.am	2010-02-05 23:34:32.000000000 -0600
++++ src/banshee-1-1.6.1/data/desktop-files/Makefile.am	2010-06-25 05:00:55.608046800 -0500
+@@ -1,9 +1,9 @@
+ desktopdir = $(datadir)/applications
+-desktop_in_files = $(wildcard *.desktop.in.in)
++desktop_in_files = $(wildcard $(srcdir)/*.desktop.in.in)
+ desktop_DATA = $(desktop_in_files:.desktop.in.in=.desktop)
+ 
+ DESKTOP_FRAMEWORK_DEPS = common.desktop.in update-desktop-file.sh
+-DESKTOP_MIME_DEPS = $(wildcard *.desktop.mime)
++DESKTOP_MIME_DEPS = $(wildcard $(srcdir)/*.desktop.mime)
+ 
+ if ENABLE_RELEASE
+ UPDATE_MIME_FILES = no
+@@ -12,7 +12,7 @@ UPDATE_MIME_FILES = yes
+ endif
+ 
+ %.desktop.in: %.desktop.in.in $(DESKTOP_FRAMEWORK_DEPS) $(DESKTOP_MIME_DEPS)
+-	./update-desktop-file.sh "$<" "$(VERSION)" "$(UPDATE_MIME_FILES)" > "$@"
++	$(srcdir)/update-desktop-file.sh "$<" "$(VERSION)" "$(UPDATE_MIME_FILES)" > "$@"
+ 
+ @INTLTOOL_DESKTOP_RULE@
+ 
+--- origsrc/banshee-1-1.6.1/gstreamer/equalizer/Makefile.am	2009-04-23 23:27:25.000000000 -0500
++++ src/banshee-1-1.6.1/gstreamer/equalizer/Makefile.am	2010-06-25 03:12:16.679185300 -0500
+@@ -9,7 +9,7 @@ libgstequalizer_la_SOURCES = \
+ 
+ libgstequalizer_la_CFLAGS = $(GST_CFLAGS) $(GST_INFO_FLAGS)
+ libgstequalizer_la_LIBADD = $(GST_LIBS) -lgstaudio-0.10 -lm
+-libgstequalizer_la_LDFLAGS = -avoid-version -module
++libgstequalizer_la_LDFLAGS = -avoid-version -module -no-undefined
+ 
+ noinst_HEADERS = gstiirequalizer.h
+ 
+--- origsrc/banshee-1-1.6.1/libbanshee/Makefile.am	2010-03-19 23:21:07.000000000 -0500
++++ src/banshee-1-1.6.1/libbanshee/Makefile.am	2010-06-25 04:39:11.435452300 -0500
+@@ -13,7 +13,7 @@ endif
+ bansheelibdir = $(pkglibdir)
+ bansheelib_LTLIBRARIES = libbanshee.la
+ 
+-libbanshee_la_LDFLAGS = -avoid-version -module
++libbanshee_la_LDFLAGS = -avoid-version -module -no-undefined
+ libbanshee_la_SOURCES =  \
+ 	banshee-bpmdetector.c \
+ 	banshee-gst.c \
+@@ -60,7 +60,7 @@ all: $(top_builddir)/bin/libbanshee.so
+ 
+ $(top_builddir)/bin/libbanshee.so: libbanshee.la
+ 	mkdir -p $(top_builddir)/bin
+-	cp -f .libs/libbanshee.so $@
++	-cp -f .libs/libbanshee.so $@
+ 
+ CLEANFILES = $(top_builddir)/bin/libbanshee.so
+ MAINTAINERCLEANFILES = Makefile.in
+--- origsrc/banshee-1-1.6.1/src/Backends/Banshee.GStreamer/Banshee.GStreamer.dll.config	2009-09-11 16:31:26.000000000 -0500
++++ src/banshee-1-1.6.1/src/Backends/Banshee.GStreamer/Banshee.GStreamer.dll.config	2010-06-25 03:14:11.818771000 -0500
+@@ -1,3 +1,4 @@
+ <configuration>
+   <dllmap dll="libbanshee.dll" target="libbanshee" os="!windows"/>
++  <dllmap dll="libbanshee.dll" target="cygbanshee.dll" os="cygwin"/>
+ </configuration>
+--- origsrc/banshee-1-1.6.1/src/Backends/Banshee.Unix/Banshee.Unix.dll.config	2009-09-11 16:31:26.000000000 -0500
++++ src/banshee-1-1.6.1/src/Backends/Banshee.Unix/Banshee.Unix.dll.config	2010-06-25 03:15:20.685709900 -0500
+@@ -1,4 +1,5 @@
+ <configuration>
+   <dllmap dll="libglib-2.0-0.dll" target="libglib-2.0.so.0" os="!windows,osx"/>
+   <dllmap dll="libglib-2.0-0.dll" target="libglib-2.0.dylib" os="osx"/>
++  <dllmap dll="libglib-2.0-0.dll" target="cygglib-2.0-0.dll" os="cygwin"/>
+ </configuration>
+--- origsrc/banshee-1-1.6.1/src/Clients/Booter/Banshee.exe.config	2009-09-11 16:31:26.000000000 -0500
++++ src/banshee-1-1.6.1/src/Clients/Booter/Banshee.exe.config	2010-06-25 03:14:56.628333900 -0500
+@@ -1,4 +1,5 @@
+ <configuration>
+   <dllmap dll="libgdk-win32-2.0-0.dll" target="libgdk-x11-2.0.so.0" os="!windows,osx"/>
+   <dllmap dll="libgdk-win32-2.0-0.dll" target="libgdk-quartz-2.0.dylib" os="osx"/>
++  <dllmap dll="libgdk-win32-2.0-0.dll" target="cyggdk-x11-2.0-0.dll" os="cygwin"/>
+ </configuration>
+--- origsrc/banshee-1-1.6.1/src/Core/Banshee.Core/Banshee.Core.dll.config	2009-09-11 16:31:26.000000000 -0500
++++ src/banshee-1-1.6.1/src/Core/Banshee.Core/Banshee.Core.dll.config	2010-06-25 03:15:10.589132400 -0500
+@@ -1,4 +1,5 @@
+ <configuration>
+   <dllmap dll="libglib-2.0-0.dll" target="libglib-2.0.so.0" os="!windows,osx"/>
+   <dllmap dll="libglib-2.0-0.dll" target="libglib-2.0.dylib" os="osx"/>
++  <dllmap dll="libglib-2.0-0.dll" target="cygglib-2.0-0.dll" os="cygwin"/>
+ </configuration>
+--- origsrc/banshee-1-1.6.1/src/Core/Banshee.Widgets/Banshee.Widgets.dll.config	2009-09-11 16:31:26.000000000 -0500
++++ src/banshee-1-1.6.1/src/Core/Banshee.Widgets/Banshee.Widgets.dll.config	2010-06-25 03:15:32.549388500 -0500
+@@ -1,4 +1,5 @@
+ <configuration>
+   <dllmap dll="libgobject-2.0-0.dll" target="libgobject-2.0.so.0" os="!windows,osx"/>
+   <dllmap dll="libgobject-2.0-0.dll" target="libgobject-2.0.0.dylib" os="osx"/>
++  <dllmap dll="libgobject-2.0-0.dll" target="cyggobject-2.0-0.dll" os="cygwin"/>
+ </configuration>
+--- origsrc/banshee-1-1.6.1/src/Extensions/Banshee.NotificationArea/Banshee.NotificationArea.dll.config	2009-04-23 23:27:25.000000000 -0500
++++ src/banshee-1-1.6.1/src/Extensions/Banshee.NotificationArea/Banshee.NotificationArea.dll.config	2010-06-25 03:16:09.838521300 -0500
+@@ -1,4 +1,6 @@
+ <configuration>
+   <dllmap dll="libgdk-x11-2.0.so.0" target="libgdk-x11-2.0.so.0"/>
+   <dllmap dll="libX11.so.6" target="libX11.so.6"/>
++  <dllmap dll="libgdk-x11-2.0.so.0" target="cyggdk-x11-2.0-0.dll" os="cygwin"/>
++  <dllmap dll="libX11.so.6" target="cygX11-6.dll" os="cygwin"/>
+ </configuration>
+--- origsrc/banshee-1-1.6.1/src/Libraries/Hyena.Gui/Hyena.Gui.dll.config	2009-09-11 16:31:26.000000000 -0500
++++ src/banshee-1-1.6.1/src/Libraries/Hyena.Gui/Hyena.Gui.dll.config	2010-06-25 03:17:09.616940400 -0500
+@@ -14,4 +14,12 @@
+   <dllmap dll="libgdk_pixbuf-2.0-0.dll" target="libgdk_pixbuf-2.0.dylib" os="osx"/>
+   <dllmap dll="libpangocairo-1.0-0.dll" target="libpangocairo-1.0.dylib" os="osx"/>
+   <dllmap dll="libcairo-2.dll" target="libcairo.2.dylib" os="osx"/>
++
++  <dllmap dll="libgtk-win32-2.0-0.dll" target="cyggtk-x11-2.0-0.dll" os="cygwin"/>
++  <dllmap dll="libgdk-win32-2.0-0.dll" target="cyggdk-x11-2.0-0.dll" os="cygwin"/>
++  <dllmap dll="libglib-2.0-0.dll" target="cygglib-2.0-0.dll" os="cygwin"/>
++  <dllmap dll="libgobject-2.0-0.dll" target="cyggobject-2.0-0.dll" os="cygwin"/>
++  <dllmap dll="libgdk_pixbuf-2.0-0.dll" target="cyggdk_pixbuf-2.0-0.dll" os="cygwin"/>
++  <dllmap dll="libpangocairo-1.0-0.dll" target="cygpangocairo-1.0-0.dll" os="cygwin"/>
++  <dllmap dll="libcairo-2.dll" target="cygcairo-2.dll" os="cygwin"/>
+ </configuration>

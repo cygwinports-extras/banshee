@@ -1,0 +1,17 @@
+inherit mono gnome2
+
+
+HOMEPAGE="http://banshee.fm/"
+SRC_URI="http://download.banshee-project.org/banshee/stable/${PV}/${PN}-1-${PV}.tar.bz2"
+SRC_DIR="${PN}-1-${PV}"
+
+DIFF_EXCLUDES="*.desktop *.pc"
+
+ACLOCAL_FLAGS="-I build/m4/banshee -I build/m4/shamrock -I build/m4/shave"
+
+CYGCONF_ARGS="
+	--disable-daap
+	--disable-karma
+	--disable-ipod
+	--disable-mtp
+"
